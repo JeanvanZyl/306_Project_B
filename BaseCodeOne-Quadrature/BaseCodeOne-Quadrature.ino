@@ -26,8 +26,8 @@ int repc = 1;    //repetition condition of PI controller
 int t0;          //memory of time for the Purpose of displaying the results
 int repeat = 0;  //repeat indicator to only let the memory of time for the Purpose of displaying the results be updated once
 
-#define lowerTrans 2;
-#define upperTrans 3;
+#define lowerTrans 9;
+#define upperTrans 10;
 volatile int encoderCount = 0;
 int countsPerRotation = 0;
 
