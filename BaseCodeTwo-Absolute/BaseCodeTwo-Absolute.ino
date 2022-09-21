@@ -6,12 +6,25 @@ int r = 0;       //indicator for reading builtin encoder to avoid the reading re
 float er;        //Proportional error for PI controller
 float eri;       //Integral error for PI controller
 
+// ***********************Task Variables************************* 
+int anVal0;
+int anVal1;
+int anVal2;
+int anVal3;
+int anVal4;
 
+bool LSB;
+bool bit1;
+bool bit2;
+bool bit3;
+bool MSB;
 
+int homeDeg;
+int movedDeg;
+// **************************************************************
 
 int t = 0;   //time in ms
 int t0 = 0;  //memory for time in ms
-
 
 
 
@@ -49,13 +62,34 @@ float ki = .02;            //integral gain of PI
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // put your main code here, to run repeatedly: ********************
+  // Five digit binary number 32 possible states from 0b00000 to 0b11111
+  // 360/32 = 11.25 deg
+  // Read the state of each of the analogue pins
+  anVal0 = analogRead(A0);
+  anVal1 = analogRead(A1);
+  anVal2 = analogRead(A2);
+  anVal3 = analogRead(A3);
+  anVal4 = analogRead(A4);
+  Serial.println(anVal0);
+  Serial.println(anVal1);
+  Serial.println(anVal2);
+  Serial.println(anVal3);
+  Serial.println(anVal4);
 
-
-
-
-
-
+  // Convert the values to booleans
+  LSB = HiOrLo(anVal0);
+  bit1 = HiOrLo(anVal1);
+  bit2 = HiOrLo(anVal2);
+  bit3 = HiOrLo(anVal3);
+  MSB = HiOrLo(anVal4);
+  Serial.print(LSB);
+  Serial.print(bit1);
+  Serial.print(bit2);
+  Serial.print(bit3);
+  Serial.println(MSB);
+  // ****************************************************************
+  
   t = millis();                       //reading time
   t0 = t;                             //sving the current time in memory
   while (t < t0 + 4000 && rep <= 10)  //let the code to ran for 4 seconds each with repetitions of 10
@@ -121,4 +155,14 @@ void loop() {
     finish = 0;
   }
   analogWrite(6, 0);  //turning off the motor
+}
+
+// Takes in the 10 bit integer value of an analogue read and returns the appropriate true of default false if over a threshold
+// NOTE: The low range of 0 - 0.8V is includes the unsure range of 0.8 V - 1.8 V
+bool HiOrLo(int val) {
+  if (val > 368) {
+    return true;
+  } else {
+    return false;
+  }
 }
