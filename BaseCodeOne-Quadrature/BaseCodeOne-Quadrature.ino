@@ -1,4 +1,4 @@
-#inlude "PinChangeInterrupt.h"
+#include "PinChangeInterrupt.h"
 int b = 0;  //reading the time for main loop to be run for 15s
 int c = 0;  //memory for the time in mainloop
 
@@ -26,10 +26,10 @@ int repc = 1;    //repetition condition of PI controller
 int t0;          //memory of time for the Purpose of displaying the results
 int repeat = 0;  //repeat indicator to only let the memory of time for the Purpose of displaying the results be updated once
 
-#define lowerTrans 9;
-#define upperTrans 10;
+#define lowerTrans 10
+#define upperTrans 9
 volatile int encoderCount = 0;
-int countsPerRotation = 0;
+int countsPerRotation = 32;
 
 void setup() {
   // put your setup code here, to run on
@@ -181,10 +181,10 @@ void loop() {
   exitt = 1;          //changing the exit condition to prevent the motor to run after 15s
 }
 
-void lowerTransInterrupt() {encoderCount++; return;}
-void upperTransInterrupt() {encoderCount++; return;}
+void lowerTransInterrupt() {encoderCount++; Serial.println("IT WORKED"); return;}
+void upperTransInterrupt() {encoderCount++; Serial.println("IT WORKED"); return;}
 
-float countsToRPM(b, t0) {
+float countsToRPM(int b, int t0) {
   float rotations = encoderCount / countsPerRotation;
   float RPM = (rotations / (b-t0)) * 60;
   return RPM;
