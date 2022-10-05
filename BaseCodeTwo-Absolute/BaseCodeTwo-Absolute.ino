@@ -42,10 +42,10 @@ int rep = 1;     //Repetition indicator
 
 
 
-void setup() {
+void setup() { 
 
   Serial.begin(250000);  //Baud rate of communication
-
+  //SensorTest();
   Serial.println("Enter the desired rotation in degree.");
 
   while (Serial.available() == 0)  //Obtaining data from user
@@ -84,12 +84,15 @@ void loop() {
   Serial.println(anVal2);
   Serial.println(anVal3);
   Serial.println(anVal4);*/
-  currentVal = GenerateBits(5);
-  Serial.println("Generated Bits: ");
-  Serial.println(currentVal);
+  
+  //Serial.println("Generated Bits: ");
+  //Serial.println(currentVal);
 
+  // Read the starting value for any loop and setHome goes to false
   if (setHome) {
+    currentVal = GenerateBits(5);
     homeVal = currentVal;
+    setHome = false;
   }
 
   // Calculate the delta value
@@ -112,16 +115,16 @@ void loop() {
   
 
   // Convert the values to booleans
-  LSB = HiOrLo(anVal0);
-  bit1 = HiOrLo(anVal1);
-  bit2 = HiOrLo(anVal2);
-  bit3 = HiOrLo(anVal3);
-  MSB = HiOrLo(anVal4);
-  Serial.print(LSB);
-  Serial.print(bit1);
-  Serial.print(bit2);
-  Serial.print(bit3);
-  Serial.println(MSB);
+  //LSB = HiOrLo(anVal0);
+  //bit1 = HiOrLo(anVal1);
+  //bit2 = HiOrLo(anVal2);
+  //bit3 = HiOrLo(anVal3);
+  //MSB = HiOrLo(anVal4);
+  //Serial.print(LSB);
+  //Serial.print(bit1);
+  //Serial.print(bit2);
+  //Serial.print(bit3);
+  //Serial.println(MSB);
   // ****************************************************************
   
   t = millis();                       //reading time
@@ -169,6 +172,7 @@ void loop() {
   }
 
   if (finish == 1) {  //this part of the code is for displaying the result
+    SensorTest();
     delay(500);       //half second delay
     rep = rep + 1;    // increasing the repetition indicator
     // ***************************************************************
@@ -206,7 +210,7 @@ void loop() {
     }
     // ***************************************************************
     
-    Serial.print("shaft possition from optical absolute sensor from home position: ");
+    /*Serial.print("shaft possition from optical absolute sensor from home position: ");
     Serial.println(totalDeg);
 
     Serial.print("shaft displacement from optical absolute sensor: ");
@@ -219,7 +223,7 @@ void loop() {
     float Error = 0 - s * 360 / 228;
     Serial.print("Error :");
     Serial.println(Error);  //displaying error
-    Serial.println();
+    Serial.println();*/
     s = 0;
     finish = 0;
   }
@@ -242,10 +246,48 @@ uint8_t GenerateBits(uint8_t n) {
   uint8_t analogInput;
   // For bits until n read analog readings and store them in an overarching total
   for (uint8_t ii = 0; ii < n; ii++) {
-    analogInput = analogRead((n+14));
-    finalReading |= ((analogInput > 368) * (2^n));
-    Serial.print("Reading processing: ");
-    Serial.println(finalReading);
+    analogInput = analogRead((18-n));
+    finalReading |= ((analogInput > 325) * (2^n));
+    //Serial.print("Reading processing: ");
+    //Serial.println(finalReading);
+  }
+}
+
+uint8_t GrayToBin(uint8_t gray) {
+  // Case table
+  switch (gray) {
+    case 0b00000: return 0;
+    case 0b00001: return 1;
+    case 0b00010: return 2;
+    case 0b00011: return 3;
+    case 0b00110: return 4;
+    case 0b00111: return 5;
+    case 0b00101: return 6;
+    case 0b00100: return 7;
+    case 0b00000: return 8;
+    case 0b00000: return 9;
+    case 0b00000: return 10;
+    case 0b00000: return 11;
+    case 0b00000: return 12;
+    case 0b00000: return 13;
+    case 0b00000: return 14;
+    case 0b00000: return 15;
+    case 0b00000: return 16;
+    case 0b00000: return 17;
+    case 0b00000: return 18;
+    case 0b00000: return 19;
+    case 0b00000: return 20;
+    case 0b00000: return 21;
+    case 0b00000: return 22;
+    case 0b00000: return 23;
+    case 0b00000: return 24;
+    case 0b00000: return 25;
+    case 0b00000: return 26;
+    case 0b00000: return 27;
+    case 0b00000: return 28;
+    case 0b00000: return 29;
+    case 0b00000: return 30;
+    case 0b00000: return 31;
   }
 }
 

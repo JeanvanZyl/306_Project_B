@@ -26,8 +26,8 @@ int repc = 1;    //repetition condition of PI controller
 int t0;          //memory of time for the Purpose of displaying the results
 int repeat = 0;  //repeat indicator to only let the memory of time for the Purpose of displaying the results be updated once
 
-#define lowerTrans 10
-#define upperTrans 9
+#define lowerTrans 9
+#define upperTrans 10
 volatile int encoderCount = 0;
 int countsPerRotation = 32;
 
@@ -108,9 +108,13 @@ void loop() {
 
 
     if (b % 100 == 0) {
+      Serial.println("Pins:");
+      Serial.println(digitalRead(9));
+      Serial.println(digitalRead(10));
+      Serial.println(' ');
       Serial.print("time in ms: ");
       Serial.print(b - t0);
-
+      
       Serial.print("  spontaneous speed from builtin encoder:  ");
       rpmm = (s_2 / (2 * 114)) * 600;  //formulation for rpm in each 100ms for PI controller
       Serial.println(rpmm);
