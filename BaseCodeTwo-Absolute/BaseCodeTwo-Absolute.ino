@@ -91,12 +91,12 @@ void loop() {
   // Read the starting value for any loop and setHome goes to false
   if (setHome) {
     currentVal = GenerateBits(5);
-    homeVal = currentVal;
+    homeVal = GrayToBin(currentVal);
     setHome = false;
   }
 
   // Calculate the delta value
-  deltaVal = (int)currentVal - (int)homeVal;
+  /*deltaVal = (int)currentVal - (int)homeVal;
   
   // If the delta value is larger than 0 it currentVal is larger than home and it is turning clockwise
   if (deltaVal != 0 && setDirection) {
@@ -111,7 +111,7 @@ void loop() {
     }
     // Direction is now set
     setDirection = false;
-  }
+  }*/
   
 
   // Convert the values to booleans
@@ -172,13 +172,19 @@ void loop() {
   }
 
   if (finish == 1) {  //this part of the code is for displaying the result
+    // Read the current position
+    currentVal = GenerateBits(5);
+    currentVal = GrayToBin(currentVal);
+    
+    setHome = false;
+    
     SensorTest();
     delay(500);       //half second delay
     rep = rep + 1;    // increasing the repetition indicator
     // ***************************************************************
     
     // Calculate the shaft displacement from the local home position
-    if (movingClockwise) {
+    /*if (movingClockwise) {
       // If the current value is now less than the local home value it has overshot
       if (homeVal > currentVal) {
         // TODO Check whether this should be 31 or 32
@@ -207,10 +213,12 @@ void loop() {
     } else {
       // If CCW this is 32 minus the currentvalue
        totalDeg = SegToDeg((32 - currentVal), movingClockwise);
-    }
+    }*/
+
+    localDeg = moveToDeg(currentVal, homeVal);
     // ***************************************************************
     
-    /*Serial.print("shaft possition from optical absolute sensor from home position: ");
+    Serial.print("shaft possition from optical absolute sensor from home position: ");
     Serial.println(totalDeg);
 
     Serial.print("shaft displacement from optical absolute sensor: ");
@@ -223,7 +231,7 @@ void loop() {
     float Error = 0 - s * 360 / 228;
     Serial.print("Error :");
     Serial.println(Error);  //displaying error
-    Serial.println();*/
+    Serial.println();
     s = 0;
     finish = 0;
   }
@@ -233,7 +241,7 @@ void loop() {
 // Takes in the 10 bit integer value of an analogue read and returns the appropriate true of default false if over a threshold
 // NOTE: The low range of 0 - 0.8V is includes the unsure range of 0.8 V - 1.8 V
 bool HiOrLo(int val) {
-  if (val > 368) {
+  if (val > 320) {
     return true;
   } else {
     return false;
@@ -241,16 +249,45 @@ bool HiOrLo(int val) {
 }
 
 // Function to generate a 5-bit number for the encoder light sensor readings
-uint8_t GenerateBits(uint8_t n) {
+/*uint8_t GenerateBits(uint8_t n) {
   uint8_t finalReading = 0b00000;
   uint8_t analogInput;
+  analogInput = analogRead(A0);
+  Serial.print("TEST: ");
+  Serial.println(analogInput);
   // For bits until n read analog readings and store them in an overarching total
   for (uint8_t ii = 0; ii < n; ii++) {
     analogInput = analogRead((18-n));
+    Serial.print("Sensor Reading: ");
+    Serial.println(analogInput);
     finalReading |= ((analogInput > 325) * (2^n));
-    //Serial.print("Reading processing: ");
-    //Serial.println(finalReading);
   }
+  Serial.print("Reading processing: ");
+  Serial.println(finalReading);
+  return finalReading;
+}*/
+
+uint8_t GenerateBits(uint8_t n) {
+  int finalReading = 0;
+  bool LSB;
+  bool bit1;
+  bool bit2;
+  bool bit3;
+  bool MSB;
+  MSB = HiOrLo(analogRead(A4));
+  bit3 = HiOrLo(analogRead(A3));
+  bit3 = HiOrLo(analogRead(A2));
+  bit3 = HiOrLo(analogRead(A1));
+  LSB = HiOrLo(analogRead(A0));
+  Serial.print(MSB);
+  Serial.print(bit3);
+  Serial.print(bit2);
+  Serial.print(bit1);
+  Serial.print(LSB);
+  finalReading = MSB*2^4 + bit3*2^3 + bit2*2^2 + bit1*2^1 + LSB*2^0;
+  Serial.print("Final Reading: ");
+  Serial.println(finalReading);
+  return finalReading;
 }
 
 uint8_t GrayToBin(uint8_t gray) {
@@ -258,37 +295,52 @@ uint8_t GrayToBin(uint8_t gray) {
   switch (gray) {
     case 0b00000: return 0;
     case 0b00001: return 1;
-    case 0b00010: return 2;
-    case 0b00011: return 3;
+    case 0b00101: return 2;
+    case 0b00100: return 3;
     case 0b00110: return 4;
     case 0b00111: return 5;
-    case 0b00101: return 6;
-    case 0b00100: return 7;
-    case 0b00000: return 8;
-    case 0b00000: return 9;
-    case 0b00000: return 10;
-    case 0b00000: return 11;
-    case 0b00000: return 12;
-    case 0b00000: return 13;
-    case 0b00000: return 14;
-    case 0b00000: return 15;
-    case 0b00000: return 16;
-    case 0b00000: return 17;
-    case 0b00000: return 18;
-    case 0b00000: return 19;
-    case 0b00000: return 20;
-    case 0b00000: return 21;
-    case 0b00000: return 22;
-    case 0b00000: return 23;
-    case 0b00000: return 24;
-    case 0b00000: return 25;
-    case 0b00000: return 26;
-    case 0b00000: return 27;
-    case 0b00000: return 28;
-    case 0b00000: return 29;
-    case 0b00000: return 30;
-    case 0b00000: return 31;
+    case 0b10111: return 6;
+    case 0b10110: return 7;
+    case 0b10100: return 8;
+    case 0b10101: return 9;
+    case 0b10001: return 10;
+    case 0b10000: return 11;
+    case 0b10010: return 12;
+    case 0b10011: return 13;
+    case 0b11011: return 14;
+    case 0b11010: return 15;
+    case 0b11000: return 16;
+    case 0b11001: return 17;
+    case 0b11101: return 18;
+    case 0b11100: return 19;
+    case 0b11110: return 20;
+    case 0b11111: return 21;
+    case 0b01111: return 22;
+    case 0b01110: return 23;
+    case 0b01100: return 24;
+    case 0b01101: return 25;
+    case 0b01001: return 26;
+    case 0b01000: return 27;
+    case 0b01010: return 28;
+    case 0b01011: return 29;
+    case 0b00011: return 30;
+    case 0b00010: return 31;
   }
+}
+
+// Function to use the current and home positions to a degrees moved float
+float moveToDeg(uint8_t currentVal, uint8_t homeVal) {
+  float delta = (float)(currentVal - homeVal)*11.25;
+  Serial.print("Homeval:");
+  Serial.println(homeVal);
+  Serial.print("Currentval:");
+  Serial.println(currentVal);
+  if (delta > 90) {
+    delta -= 360;
+  } else if (delta < -90) {
+    delta += 360;
+  }
+  return delta;
 }
 
 // Function to convert a number of segments moved into a degree estimate
