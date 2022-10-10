@@ -26,19 +26,17 @@ int repc = 1;    //repetition condition of PI controller
 int t0;          //memory of time for the Purpose of displaying the results
 int repeat = 0;  //repeat indicator to only let the memory of time for the Purpose of displaying the results be updated once
 
-#define lowerTrans 9
-#define upperTrans 10
+#define lowerTrans A0
+#define upperTrans A1
+#define countsPerRotation 32
 volatile int encoderCount = 0;
-int countsPerRotation = 32;
+
 
 void setup() {
   // put your setup code here, to run on
   Serial.begin(250000);  //Baud rate of communication
   pinMode(lowerTrans, INPUT);
   pinMode(upperTrans, INPUT);
-  //interrupts for transistors
-  attachInterrupt(digitalPinToInterrupt(lowerTrans), lowerTransInterrupt, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(upperTrans), upperTransInterrupt, CHANGE);
 
   Serial.println("Enter the desired RPM.");
 
@@ -64,6 +62,7 @@ void loop() {
 
   while ((b >= c) && (b <= (c + 15500)) && exitt == 0)  //let the main loop to be run for 15s
   {
+    countup(lowerTrans,300);
 
 
 
@@ -185,8 +184,18 @@ void loop() {
   exitt = 1;          //changing the exit condition to prevent the motor to run after 15s
 }
 
-void lowerTransInterrupt() {encoderCount++; Serial.println("IT WORKED"); return;}
-void upperTransInterrupt() {encoderCount++; Serial.println("IT WORKED"); return;}
+void countup(int pin, int threshold){
+  int flipflop = 0;
+  if(analogRead(pin)>threshold && flipflop == 0) {
+    encoderCount++
+    flipflop++;
+  }
+  if(analogRead(pin) < threshold && flipflop == 1) {
+    encoderCount++
+    flipflop--;
+  }
+  Serial.println(encoderCount);
+}
 
 float countsToRPM(int b, int t0) {
   float rotations = encoderCount / countsPerRotation;
