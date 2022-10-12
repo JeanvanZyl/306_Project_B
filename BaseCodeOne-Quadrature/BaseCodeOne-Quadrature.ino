@@ -62,10 +62,6 @@ void loop() {
 
   while ((b >= c) && (b <= (c + 15500)) && exitt == 0)  //let the main loop to be run for 15s
   {
-    countup(lowerTrans,300);
-
-
-
 
     if (b % 13 == 0 && repc == 1)  //PI controller
     {
@@ -84,6 +80,9 @@ void loop() {
 
     s1 = digitalRead(7);  //reading Chanel 1 of builtin encoder
     s2 = digitalRead(8);  //reading Chanel 2 of builtin encoder
+
+    void countup(A0,100,300); // Polling encoder
+
     if (s1 != s2 && r == 0) {
       s = s + 1;      //counters for rpm that displyed every 5s
       s_2 = s_2 + 1;  //counters for rpm that used in PI contoller
@@ -127,10 +126,10 @@ void loop() {
         Serial.println((s / (228)) * 12);  //formula for rpm in each 5s
 
         Serial.print("RPM from optical quadrature encoder: ");
-        Serial.println(0);
+        Serial.println(countsToRPM(b, t0)); // CHANGED
 
         Serial.print("Error: ");
-        Serial.println(-(s / (228)) * 12);
+        Serial.println(countsToRPM(b, t0)-(s / (228)) * 12);// CHANGED
 
         Serial.print("direction read by motor's sensor: ");
         if (dirm == 0) {
@@ -184,13 +183,13 @@ void loop() {
   exitt = 1;          //changing the exit condition to prevent the motor to run after 15s
 }
 
-void countup(int pin, int threshold){
+void countup(int pin, int LowThreshold, int HighThreshold){
   int flipflop = 0;
-  if(analogRead(pin)>threshold && flipflop == 0) {
+  if(analogRead(pin)>HighThreshold && flipflop == 0) {
     encoderCount++;
     flipflop++;
   }
-  if(analogRead(pin) < threshold && flipflop == 1) {
+  if(analogRead(pin) < LowThreshold && flipflop == 1) {
     encoderCount++;
     flipflop--;
   }
@@ -198,7 +197,7 @@ void countup(int pin, int threshold){
 }
 
 float countsToRPM(int b, int t0) {
-  float rotations = encoderCount / countsPerRotation;
+  float rotations = (float)encoderCount / countsPerRotation;
   float RPM = (rotations / (b-t0)) * 60;
   return RPM;
 }
