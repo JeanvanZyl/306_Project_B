@@ -187,11 +187,11 @@ void loop() {
 void countup(int pin, int threshold){
   int flipflop = 0;
   if(analogRead(pin)>threshold && flipflop == 0) {
-    encoderCount++
+    encoderCount++;
     flipflop++;
   }
   if(analogRead(pin) < threshold && flipflop == 1) {
-    encoderCount++
+    encoderCount++;
     flipflop--;
   }
   Serial.println(encoderCount);
