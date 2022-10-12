@@ -81,7 +81,7 @@ void loop() {
     s1 = digitalRead(7);  //reading Chanel 1 of builtin encoder
     s2 = digitalRead(8);  //reading Chanel 2 of builtin encoder
 
-    void countup(A0,100,300); // Polling encoder
+    countup(A0,100,300); // Polling encoder
 
     if (s1 != s2 && r == 0) {
       s = s + 1;      //counters for rpm that displyed every 5s
@@ -188,16 +188,18 @@ void countup(int pin, int LowThreshold, int HighThreshold){
   if(analogRead(pin)>HighThreshold && flipflop == 0) {
     encoderCount++;
     flipflop++;
+    Serial.println("BLACK");
   }
   if(analogRead(pin) < LowThreshold && flipflop == 1) {
     encoderCount++;
     flipflop--;
+    Serial.println("WHITE");
   }
-  Serial.println(encoderCount);
+  //Serial.println(encoderCount);
 }
 
 float countsToRPM(int b, int t0) {
   float rotations = (float)encoderCount / countsPerRotation;
-  float RPM = (rotations / (b-t0)) * 60;
+  float RPM = (rotations / (b-t0)) * 60 * 17.8;
   return RPM;
 }
