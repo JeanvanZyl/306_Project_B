@@ -1,4 +1,3 @@
-#include "PinChangeInterrupt.h"
 int b = 0;  //reading the time for main loop to be run for 15s
 int c = 0;  //memory for the time in mainloop
 
@@ -29,8 +28,16 @@ int repeat = 0;  //repeat indicator to only let the memory of time for the Purpo
 #define lowerTrans A0
 #define upperTrans A1
 #define countsPerRotation 16
-volatile int encoderCount = 0;
+#define HighThreshold 350
+#define LowThreshold 250
+volatile int encoderCountOuter = 0;
+volatile int encoderCountOuterAve = 0;
 volatile int flipflop = 0;
+volatile int InnerM = 0;
+volatile int DirectionM = 0;
+volatile int DirM;
+
+
 
 
 void setup() {
@@ -46,6 +53,7 @@ void setup() {
   }
 
   RPM = Serial.readString().toFloat();  //Reading the Input string from Serial port.
+  
   if (RPM < 0) {
     analogWrite(3, 255);  //changing the direction of motor's rotation
   }
@@ -76,13 +84,15 @@ void loop() {
     }
 
 
-
-
-
     s1 = digitalRead(7);  //reading Chanel 1 of builtin encoder
     s2 = digitalRead(8);  //reading Chanel 2 of builtin encoder
 
-    countup(A0,200,350); // Polling encoder
+    countup(A0, encoderCountOuter); // Polling encoder
+    countup(A0, encoderCountOuterAve); // Polling encoder
+    if(b < 5000){
+      RotationDirection(A0,A1);
+    }
+    
     //Serial.println(analogRead(A0));
 
     if (s1 != s2 && r == 0) {
@@ -114,7 +124,7 @@ void loop() {
       Serial.println(' ');
       Serial.print("time in ms: ");
       Serial.print(b - t0);
-      
+
       Serial.print("  spontaneous speed from builtin encoder:  ");
       rpmm = (s_2 / (2 * 114)) * 600;  //formulation for rpm in each 100ms for PI controller
       Serial.println(rpmm);
@@ -128,10 +138,12 @@ void loop() {
         Serial.println((s / (228)) * 12);  //formula for rpm in each 5s
 
         Serial.print("RPM from optical quadrature encoder: ");
-        Serial.println(countsToRPM(b, t0)); // CHANGED
+        Serial.println(countsToRPM(b,t0)); // CHANGED
+        Serial.print("RPM from optical quadrature encoder Ave: ");
+        Serial.println(countsToRPMAve(5000,0)); // CHANGED
 
         Serial.print("Error: ");
-        Serial.println(countsToRPM(b, t0)-(s / (228)) * 12);// CHANGED
+        Serial.println(countsToRPM(b, t0) - (s / (228)) * 12); // CHANGED
 
         Serial.print("direction read by motor's sensor: ");
         if (dirm == 0) {
@@ -142,8 +154,12 @@ void loop() {
         Serial.print("  ,   ");
 
         Serial.print("direction read by sensor:  ");
-        Serial.println("");
-        Serial.println();
+       if (DirM == 0) {
+          Serial.print("CW");
+        } else {
+          Serial.print("CCW");
+        }
+        Serial.print("  ,   ");
 
         s = 0;
         directionm = 0;
@@ -185,21 +201,50 @@ void loop() {
   exitt = 1;          //changing the exit condition to prevent the motor to run after 15s
 }
 
-void countup(int pin, int LowThreshold, int HighThreshold){
-  if(analogRead(pin) >= HighThreshold && flipflop == 0) {
+void countup(int pin,int encoderCount) {
+  if (analogRead(pin) >= HighThreshold && flipflop == 0) {
     encoderCount++;
     flipflop++;
     //Serial.println("BLACK");
   }
-  if(analogRead(pin) <= LowThreshold && flipflop == 1) {
+  if (analogRead(pin) <= LowThreshold && flipflop == 1) {
     encoderCount++;
     flipflop--;
     //Serial.println("WHITE");
   }
 }
 
+void RotationDirection(int OuterRing , int InnerRing){
+   if ((analogRead(OuterRing) >= HighThreshold) && (analogRead(InnerRing) >= HighThreshold) && (InnerM <= LowThreshold))  //reading the direction of motor by cheaking which chanel follows which
+    {
+      DirectionM++;
+    }
+
+    if ((analogRead(OuterRing) <= LowThreshold) && (analogRead(InnerRing) <= LowThreshold) && (InnerM <= HighThreshold)) {
+      DirectionM++;
+    }
+
+    InnerM = analogRead(InnerRing);  //memory of the previous builtin encoder chanel 2
+
+    if (DirectionM > 100) {
+      DirM = 0;
+    }
+    if (DirectionM < 20) {
+      DirM = 1;
+    }
+    Serial.print("DirectionM: ");
+    Serial.println(DirectionM);
+}
+
+
 float countsToRPM(int b, int t0) {
-  float rotations = (float)encoderCount / countsPerRotation;
-  float RPM = (rotations / (b-t0)) * 60 * 1000;
+  float rotations = (float)encoderCountOuter / countsPerRotation;
+  float RPM = (rotations / (b - t0)) * 60 * 1000;
+  return RPM;
+}
+
+float countsToRPMAve(int b, int t0) {
+  float rotations = (float)encoderCountOuterAve / countsPerRotation;
+  float RPM = (rotations / (b - t0)) * 60 * 1000;
   return RPM;
 }
