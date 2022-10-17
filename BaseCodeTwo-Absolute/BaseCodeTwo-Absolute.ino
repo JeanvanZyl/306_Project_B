@@ -60,6 +60,11 @@ void setup() {
   pinMode(16, INPUT);
   pinMode(17, INPUT);
   pinMode(18, INPUT);
+
+  //PhotoTest(false, 8);
+  Serial.println("*******************************");
+  //float ass = Serial.readString().toFloat();
+  //PhotoTest(false, 60);
 }
 
 
@@ -74,8 +79,8 @@ void loop() {
     currentVal = GenerateBits(5);
     homeVal = GrayToBin(currentVal);
     setHome = false;
-    Serial.print("Initial Segment: ");
-    Serial.println(currentVal);
+    //Serial.print("Initial Segment: ");
+    //Serial.println(currentVal);
   }
   // ****************************************************************
   
@@ -119,8 +124,8 @@ void loop() {
     // Read the current position
     currentVal = GenerateBits(5);
     currentVal = GrayToBin(currentVal);
-    Serial.print("Final Segment: ");
-    Serial.println(currentVal);
+    //Serial.print("Final Segment: ");
+   // Serial.println(currentVal);
     setHome = true;
     
     SensorTest();
@@ -131,10 +136,11 @@ void loop() {
     // ***************************************************************
     
     Serial.print("shaft possition from optical absolute sensor from home position: ");
-    Serial.println(totalDeg);
+    float absoluteSheisse = 11.25 * currentVal;
+    Serial.println(abs(absoluteSheisse));
 
     Serial.print("shaft displacement from optical absolute sensor: ");
-    Serial.println(abs(localDeg));
+    Serial.println(localDeg);
 
     Serial.print("Shaft displacement from motor's builtin encoder: ");
     Serial.println(s * 360 / 228);  //every full Revolution of the shaft is associated with 228 counts of builtin
@@ -152,8 +158,8 @@ void loop() {
 
 // Takes in the 10 bit integer value of an analogue read and returns the appropriate true of default false if over a threshold
 // NOTE: The low range of 0 - 0.8V is includes the unsure range of 0.8 V - 1.8 V
-bool HiOrLo(int val) {
-  if (val > 320) {
+bool HiOrLo(int val, int threshold) {
+  if (val > threshold) {
     return true;
   } else {
     return false;
