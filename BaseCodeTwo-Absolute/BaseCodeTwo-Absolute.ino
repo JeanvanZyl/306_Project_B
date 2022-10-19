@@ -7,28 +7,21 @@ float er;        //Proportional error for PI controller
 float eri;       //Integral error for PI controller
 
 // ***********************Task Variables************************* 
-int anVal0;
-int anVal1;
-int anVal2;
-int anVal3;
-int anVal4;
-
-bool LSB;
-bool bit1;
-bool bit2;
-bool bit3;
-bool MSB;
 bool setHome = true;
-bool setDirection = true;
-bool movingClockwise = true;
 
 uint8_t homeVal;
 uint8_t currentVal;
-int deltaVal;
-int movedDeg;
+
+int anVal4; // centre
+int anVal3;
+int anVal2;
+int anVal1;
+int anVal0;
+
+
+bool isCW;
 
 float localDeg;
-float totalDeg;
 // **************************************************************
 
 int t = 0;   //time in ms
@@ -136,19 +129,25 @@ void loop() {
     // ***************************************************************
     
     Serial.print("shaft possition from optical absolute sensor from home position: ");
-    float absoluteSheisse = 11.25 * currentVal;
-    Serial.println(abs(absoluteSheisse));
+    float absoluteDeg = 11.25 * currentVal;
+    Serial.println(abs(absoluteDeg));
 
-    Serial.print("shaft displacement from optical absolute sensor: ");
-    Serial.println(localDeg);
+    Serial.print("magnitude of shaft displacement from optical absolute sensor: ");
+    Serial.println(abs(localDeg));
 
     Serial.print("Shaft displacement from motor's builtin encoder: ");
     Serial.println(s * 360 / 228);  //every full Revolution of the shaft is associated with 228 counts of builtin
                                     //encoder so to turn it to degre we can use this formula (s * 360 / 228), "s" is the number of  built-in encoder counts
 
-    float Error = localDeg - s * 360 / 228;
+    float Error = abs(localDeg) - s * 360 / 228;
     Serial.print("Error :");
     Serial.println(Error);  //displaying error
+    Serial.print("Shaft displacement direction from optical absolute encoder: ");
+    if (localDeg < 0) {
+      Serial.println("CCW");
+    } else {
+      Serial.println("CW");
+    }
     Serial.println();
     s = 0;
     finish = 0;
