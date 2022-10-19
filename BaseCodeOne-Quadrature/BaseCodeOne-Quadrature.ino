@@ -27,6 +27,7 @@ int repeat = 0;  //repeat indicator to only let the memory of time for the Purpo
 
 #define lowerTrans A0
 #define upperTrans A1
+<<<<<<< HEAD
 #define countsPerRotation 16
 #define HighThreshold 350
 #define LowThreshold 250
@@ -38,6 +39,10 @@ volatile int DirectionM = 0;
 volatile int DirM;
 
 
+=======
+#define countsPerRotation 32
+volatile int encoderCount = 0;
+>>>>>>> parent of aab1e70 (WTF it works)
 
 
 void setup() {
@@ -87,6 +92,7 @@ void loop() {
     s1 = digitalRead(7);  //reading Chanel 1 of builtin encoder
     s2 = digitalRead(8);  //reading Chanel 2 of builtin encoder
 
+<<<<<<< HEAD
     countup(A0, encoderCountOuter); // Polling encoder
     countup(A0, encoderCountOuterAve); // Polling encoder
     if(b < 5000){
@@ -94,6 +100,9 @@ void loop() {
     }
     
     //Serial.println(analogRead(A0));
+=======
+    countup(A0,100,300); // Polling encoder
+>>>>>>> parent of aab1e70 (WTF it works)
 
     if (s1 != s2 && r == 0) {
       s = s + 1;      //counters for rpm that displyed every 5s
@@ -201,17 +210,28 @@ void loop() {
   exitt = 1;          //changing the exit condition to prevent the motor to run after 15s
 }
 
+<<<<<<< HEAD
 void countup(int pin,int encoderCount) {
   if (analogRead(pin) >= HighThreshold && flipflop == 0) {
+=======
+void countup(int pin, int LowThreshold, int HighThreshold){
+  int flipflop = 0;
+  if(analogRead(pin)>HighThreshold && flipflop == 0) {
+>>>>>>> parent of aab1e70 (WTF it works)
     encoderCount++;
     flipflop++;
-    //Serial.println("BLACK");
+    Serial.println("BLACK");
   }
+<<<<<<< HEAD
   if (analogRead(pin) <= LowThreshold && flipflop == 1) {
+=======
+  if(analogRead(pin) < LowThreshold && flipflop == 1) {
+>>>>>>> parent of aab1e70 (WTF it works)
     encoderCount++;
     flipflop--;
-    //Serial.println("WHITE");
+    Serial.println("WHITE");
   }
+  //Serial.println(encoderCount);
 }
 
 void RotationDirection(int OuterRing , int InnerRing){
@@ -238,6 +258,7 @@ void RotationDirection(int OuterRing , int InnerRing){
 
 
 float countsToRPM(int b, int t0) {
+<<<<<<< HEAD
   float rotations = (float)encoderCountOuter / countsPerRotation;
   float RPM = (rotations / (b - t0)) * 60 * 1000;
   return RPM;
@@ -246,5 +267,9 @@ float countsToRPM(int b, int t0) {
 float countsToRPMAve(int b, int t0) {
   float rotations = (float)encoderCountOuterAve / countsPerRotation;
   float RPM = (rotations / (b - t0)) * 60 * 1000;
+=======
+  float rotations = (float)encoderCount / countsPerRotation;
+  float RPM = (rotations / (b-t0)) * 60 * 17.8;
+>>>>>>> parent of aab1e70 (WTF it works)
   return RPM;
 }
