@@ -25,24 +25,19 @@ int repc = 1;    //repetition condition of PI controller
 int t0;          //memory of time for the Purpose of displaying the results
 int repeat = 0;  //repeat indicator to only let the memory of time for the Purpose of displaying the results be updated once
 
-#define lowerTrans A0
+// Defined New variables
+// Pins for readings
+#define lowerTrans A0 
 #define upperTrans A1
-<<<<<<< HEAD
+// Variables for detection
 #define countsPerRotation 16
 #define HighThreshold 350
 #define LowThreshold 250
-volatile int encoderCountOuter = 0;
-volatile int encoderCountOuterAve = 0;
+volatile int encoderCount = 0;
 volatile int flipflop = 0;
 volatile int InnerM = 0;
+volatile int OuterM = 0;
 volatile int DirectionM = 0;
-volatile int DirM;
-
-
-=======
-#define countsPerRotation 32
-volatile int encoderCount = 0;
->>>>>>> parent of aab1e70 (WTF it works)
 
 
 void setup() {
@@ -92,17 +87,11 @@ void loop() {
     s1 = digitalRead(7);  //reading Chanel 1 of builtin encoder
     s2 = digitalRead(8);  //reading Chanel 2 of builtin encoder
 
-<<<<<<< HEAD
-    countup(A0, encoderCountOuter); // Polling encoder
-    countup(A0, encoderCountOuterAve); // Polling encoder
+    countup(A0); // Polling Designed encoder
+    // Check Rotation Direction
     if(b < 5000){
       RotationDirection(A0,A1);
     }
-    
-    //Serial.println(analogRead(A0));
-=======
-    countup(A0,100,300); // Polling encoder
->>>>>>> parent of aab1e70 (WTF it works)
 
     if (s1 != s2 && r == 0) {
       s = s + 1;      //counters for rpm that displyed every 5s
@@ -147,12 +136,10 @@ void loop() {
         Serial.println((s / (228)) * 12);  //formula for rpm in each 5s
 
         Serial.print("RPM from optical quadrature encoder: ");
-        Serial.println(countsToRPM(b,t0)); // CHANGED
-        Serial.print("RPM from optical quadrature encoder Ave: ");
-        Serial.println(countsToRPMAve(5000,0)); // CHANGED
+        Serial.println(countsToRPM(b,t0)); // Printing Designed RPM
 
         Serial.print("Error: ");
-        Serial.println(countsToRPM(b, t0) - (s / (228)) * 12); // CHANGED
+        Serial.println(countsToRPM(b, t0) - (s / (228)) * 12); // Printing Error between designed and in-built
 
         Serial.print("direction read by motor's sensor: ");
         if (dirm == 0) {
@@ -163,7 +150,7 @@ void loop() {
         Serial.print("  ,   ");
 
         Serial.print("direction read by sensor:  ");
-       if (DirM == 0) {
+       if (DirectionM < 0) {
           Serial.print("CW");
         } else {
           Serial.print("CCW");
@@ -210,66 +197,43 @@ void loop() {
   exitt = 1;          //changing the exit condition to prevent the motor to run after 15s
 }
 
-<<<<<<< HEAD
-void countup(int pin,int encoderCount) {
-  if (analogRead(pin) >= HighThreshold && flipflop == 0) {
-=======
-void countup(int pin, int LowThreshold, int HighThreshold){
-  int flipflop = 0;
-  if(analogRead(pin)>HighThreshold && flipflop == 0) {
->>>>>>> parent of aab1e70 (WTF it works)
+void countup(int pin){
+  // countup on any change of Black or White
+  // Check for Black signal
+  if(analogRead(pin) > HighThreshold && flipflop == 0) {
     encoderCount++;
     flipflop++;
-    Serial.println("BLACK");
   }
-<<<<<<< HEAD
-  if (analogRead(pin) <= LowThreshold && flipflop == 1) {
-=======
-  if(analogRead(pin) < LowThreshold && flipflop == 1) {
->>>>>>> parent of aab1e70 (WTF it works)
+  // Check for White signal
+  if (analogRead(pin) < LowThreshold && flipflop == 1) {
     encoderCount++;
     flipflop--;
-    Serial.println("WHITE");
   }
-  //Serial.println(encoderCount);
 }
 
 void RotationDirection(int OuterRing , int InnerRing){
-   if ((analogRead(OuterRing) >= HighThreshold) && (analogRead(InnerRing) >= HighThreshold) && (InnerM <= LowThreshold))  //reading the direction of motor by cheaking which chanel follows which
-    {
+  //reading the direction of motor by cheaking which chanel follows which:
+    // CCW  Detection
+   if ((analogRead(OuterRing) >= HighThreshold) && (analogRead(InnerRing) >= HighThreshold) && (OuterM >= HighThreshold)) {
       DirectionM++;
     }
 
-    if ((analogRead(OuterRing) <= LowThreshold) && (analogRead(InnerRing) <= LowThreshold) && (InnerM <= HighThreshold)) {
-      DirectionM++;
+    // CW detection
+    if ((analogRead(OuterRing) >= HighThreshold) && (analogRead(InnerRing) >= HighThreshold) && (InnerM <= HighThreshold)) {
+      DirectionM--;
     }
 
-    InnerM = analogRead(InnerRing);  //memory of the previous builtin encoder chanel 2
+    // Store previous readings
+    InnerM = analogRead(InnerRing);  
+    OuterM = analogRead(OuterRing);  
 
-    if (DirectionM > 100) {
-      DirM = 0;
-    }
-    if (DirectionM < 20) {
-      DirM = 1;
-    }
-    Serial.print("DirectionM: ");
-    Serial.println(DirectionM);
 }
 
 
 float countsToRPM(int b, int t0) {
-<<<<<<< HEAD
-  float rotations = (float)encoderCountOuter / countsPerRotation;
+  // Work out total rotations
+  float rotations = (float) encoderCount / countsPerRotation;
+  // Calculate time averaged RPM
   float RPM = (rotations / (b - t0)) * 60 * 1000;
-  return RPM;
-}
-
-float countsToRPMAve(int b, int t0) {
-  float rotations = (float)encoderCountOuterAve / countsPerRotation;
-  float RPM = (rotations / (b - t0)) * 60 * 1000;
-=======
-  float rotations = (float)encoderCount / countsPerRotation;
-  float RPM = (rotations / (b-t0)) * 60 * 17.8;
->>>>>>> parent of aab1e70 (WTF it works)
   return RPM;
 }
